@@ -1,0 +1,93 @@
+library(RCurl)
+library(jsonlite)
+library(dplyr)
+
+# Definir os headers
+headers <- c(
+  "X-API-KEY" = "dc0106700e0e24f23be2e6a8828b19f1508fc97a",
+  "Content-Type" = "application/json"
+)
+
+# Função para fazer a requisição
+fetch_page <- function(page_num = NULL) {
+  if (is.null(page_num)) {
+    # Se for a primeira página, o parâmetro 'page' não é incluído
+    params <- '[
+      {
+        \"q\": \"LGPD\",
+        \"gl\": \"br\",
+        \"hl\": \"pt-br\",
+        \"num\": 100
+      },
+      {
+        \"q\": \"ANPD",
+        \"gl\": \"br\",
+        \"hl\": \"pt-br\",
+        \"num\": 100
+      }
+    ]'
+  } else {
+    # Para as demais páginas, incluir o parâmetro 'page'
+    params <- paste0('[
+      {
+        \"q\": \"LGPD\",
+        \"gl\": \"br\",
+        \"hl\": \"pt-br\",
+        \"num\": 100,
+        \"page\": ', page_num, '
+      },
+      {
+        \"q\": \"ANPD\",
+        \"gl\": \"br\",
+        \"hl\": \"pt-br\",
+        \"num\": 100,
+        \"page\": ', page_num, '
+      }
+    ]')
+  }
+  
+  # Realizar a requisição para a página específica
+  res <- postForm("https://google.serper.dev/news", 
+                  .opts=list(postfields = params, 
+                             httpheader = headers, 
+                             followlocation = TRUE), 
+                  style = "httppost")
+  
+  return(res)
+}
+
+# Variável para armazenar os resultados acumulados
+all_news <- data.frame()
+
+# Função para concatenar os dataframes dentro da coluna 'news'
+concatenar_news <- function(df) {
+  if (!is.null(df)) {
+    # Verifica se a coluna 'news' contém dataframes
+    for (i in 1:nrow(df)) {
+      if (is.data.frame(df$news[[i]])) {
+        all_news <<- bind_rows(all_news, df$news[[i]]) # Concatenar os dataframes de news
+      }
+    }
+  }
+}
+
+# Pegar a primeira página (sem o parâmetro 'page')
+cat("Resultados da página: 1\n")
+result <- fetch_page()
+result_json <- fromJSON(result, flatten = TRUE)
+
+# Concatenar os dataframes da coluna 'news'
+concatenar_news(as.data.frame(result_json))
+
+# Loop para pegar as páginas subsequentes
+for (page in 2:5) {
+  cat("Resultados da página:", page, "\n")
+  result <- fetch_page(page)
+  result_json <- fromJSON(result, flatten = TRUE)
+  
+  # Concatenar os dataframes da coluna 'news'
+  concatenar_news(as.data.frame(result_json))
+}
+
+# Exibir o dataframe final concatenado
+print(all_news)
