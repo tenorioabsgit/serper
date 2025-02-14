@@ -92,10 +92,5 @@ Nem todos os links do **Google Scholar** fornecem acesso direto ao PDF. O códig
 
 ---
 
-## 👨‍💻 Autor
-
-👤 **José Tenório Abs Junior**  
-📧 [Seu Email]  
-🏛 **IBPAD - Instituto Brasileiro de Pesquisa e Análise de Dados**  
 
 🚀 **Agora você pode monitorar publicações acadêmicas e notícias automaticamente!** Qualquer dúvida, me avise! 😊
